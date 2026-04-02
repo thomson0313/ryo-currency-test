@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat — {{username}}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 1rem auto; padding: 0 1rem; display: flex; flex-direction: column; height: calc(100vh - 2rem); }
+    h1 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+    #log { flex: 1; overflow-y: auto; border: 1px solid #ccc; padding: 0.5rem; background: #fafafa; font-size: 0.95rem; }
+    .line { margin: 0.25rem 0; }
+    .line .who { font-weight: 600; color: #333; }
+    #form { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    #msg { flex: 1; padding: 0.45rem; }
+    #status { font-size: 0.85rem; color: #666; margin-top: 0.35rem; }
+  </style>
+</head>
+<body>
+  <h1>Chat as <span id="who">{{username}}</span></h1>
+  <div id="log"></div>
+  <form id="form">
+    <input id="msg" type="text" maxlength="2000" placeholder="Message…" autocomplete="off" autofocus>
+    <button type="submit">Send</button>
+  </form>
+  <div id="status">Connecting…</div>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script>
+(function () {
+  var user = $('#who').text();
+  var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  var ws = new WebSocket(proto + '//' + location.host + '/ws?u=' + encodeURIComponent(user));
+  var $log = $('#log');
+  var $status = $('#status');
+
+  function appendLine(name, text) {
+    var esc = $('<div/>').text(text).html();
+    var who = $('<div/>').text(name).html();
+    $log.append('<div class="line"><span class="who">' + who + ':</span> ' + esc + '</div>');
+    $log.scrollTop($log[0].scrollHeight);
+  }
+
+  ws.onopen = function () { $status.text('Connected'); };
+  ws.onclose = function () { $status.text('Disconnected'); };
+  ws.onerror = function () { $status.text('Connection error'); };
+  ws.onmessage = function (ev) {
+    try {
+      var o = JSON.parse(ev.data);
+      if (o.user && o.text) appendLine(o.user, o.text);
+    } catch (e) { /* ignore */ }
+  };
+
+  $('#form').on('submit', function (e) {
+    e.preventDefault();
+    var t = $.trim($('#msg').val());
+    if (!t || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(t);
+    $('#msg').val('');
+  });
+})();
+  </script>
+</body>
+</html>

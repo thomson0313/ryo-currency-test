@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat — sign in</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 28rem; margin: 3rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.25rem; }
+    label { display: block; margin-bottom: 0.35rem; }
+    input[type=text] { width: 100%; box-sizing: border-box; padding: 0.5rem; }
+    button { margin-top: 0.75rem; padding: 0.45rem 1rem; }
+    p.hint { color: #555; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <h1>Enter your username</h1>
+  <p class="hint">Letters, digits, and underscores only (max 32 characters).</p>
+  <form method="post" action="/join">
+    <label for="username">Username</label>
+    <input id="username" name="username" type="text" maxlength="32" required autocomplete="username" pattern="[A-Za-z0-9_]+">
+    <button type="submit">Join chat</button>
+  </form>
+</body>
+</html>
