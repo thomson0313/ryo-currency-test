@@ -59,7 +59,7 @@ int main()
             std::lock_guard<std::mutex> lock(clients_mtx);
             clients.insert(&conn);
         })
-        .onclose([&](crow::websocket::connection& conn, const std::string&, uint16_t) {
+        .onclose([&](crow::websocket::connection& conn, const std::string&) {
             if (auto* p = static_cast<std::string*>(conn.userdata()))
             {
                 delete p;
@@ -115,7 +115,7 @@ int main()
         return res;
     });
 
-    CROW_ROUTE(app, "/chat")([](const crow::request& req) {
+    CROW_ROUTE(app, "/chat")([](const crow::request& req) -> crow::response {
         char* u = req.url_params.get("u");
         if (!u)
         {
@@ -136,7 +136,11 @@ int main()
         crow::mustache::context ctx;
         ctx["username"] = name;
         auto page = crow::mustache::load("chat.html");
-        return page.render(ctx);
+        crow::response r;
+        r.code = 200;
+        r.set_header("Content-Type", "text/html; charset=utf-8");
+        r.body = page.render(ctx).dump();
+        return r;
     });
 
     app.port(18080).multithreaded().run();
